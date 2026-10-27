@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Football HyperGraph Explorer C 模块独立演示。所有数据均为明确标记的模拟数据。">
+  <title>Player Lab · Football HyperGraph Explorer</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./demo.css">
+</head>
+<body>
+  <header class="lab-masthead"><a class="lab-brand" href="./"><span class="lab-brand-symbol" aria-hidden="true">H</span><span>FOOTBALL<br><strong>HYPERGRAPH EXPLORER</strong></span></a><span class="lab-course">DATA VISUALIZATION / 2026<br>INDEPENDENT MODULE PREVIEW</span></header>
+  <main class="lab-main">
+    <div class="lab-intro"><div><p class="lab-kicker">MODULE C / STAR PLAYER ANALYSIS</p><h1>从一个球员，读懂一组关系。</h1><p>在个人表现与多人协作之间，找到比赛的另一种视角。</p></div><span class="lab-version">PLAYER<br>LAB <span>01</span></span></div>
+    <div class="lab-data-notice" role="note"></div>
+    <div class="lab-layout">
+      <aside class="lab-controls" aria-label="独立演示控制">
+        <div class="lab-control-heading"><span>探索控制</span><span class="lab-tag">DEMO</span></div>
+        <label class="lab-label" for="demo-mode">关系模式</label>
+        <select id="demo-mode"><option value="collaboration">Collaboration · 同队协作</option><option value="competition">Competition · 跨队对抗</option></select>
+        <label class="lab-label" for="demo-team">球队筛选</label>
+        <select id="demo-team"><option value="">全部球队</option><option value="demo-arg">Argentina</option><option value="demo-fra">France</option></select>
+        <div class="lab-range-label"><label for="demo-start">开始分钟</label><output id="demo-start-value" for="demo-start">0′</output></div>
+        <input id="demo-start" type="range" min="0" max="125" step="1" value="0">
+        <div class="lab-range-label"><label for="demo-end">结束分钟</label><output id="demo-end-value" for="demo-end">125′</output></div>
+        <input id="demo-end" type="range" min="0" max="125" step="1" value="125">
+        <div class="lab-presets" aria-label="时间区间快捷选择"><button type="button" data-range="0,125">全场</button><button type="button" data-range="0,45">上半场</button><button type="button" data-range="45,90">下半场</button><button type="button" data-range="90,125">加时阶段</button></div>
+        <hr>
+        <label class="lab-label" for="demo-case">边界场景</label>
+        <select id="demo-case"><option value="normal">正常球员与关系</option><option value="no-edges">有个人事件，无相关超边</option><option value="no-passes">有射门，无传球</option><option value="missing">缺失结果与 xG</option><option value="no-events">无个人事件</option><option value="unselected">未选择球员</option></select>
+        <hr>
+        <div class="lab-signal"><span class="lab-label">主图联动接口检查</span><p id="demo-signal" aria-live="polite"></p><p class="lab-hint">此处显示共享状态收到的选择，主超图由 B 模块接入。</p></div>
+        <div class="lab-signal"><span class="lab-label">组合选择通知</span><p id="demo-edge-signal" aria-live="polite">尚未选择多人组合</p></div>
+        <a class="lab-doc-link" href="../../docs/PLAYER_C.md">接入说明与测试命令 ↗</a>
+      </aside>
+      <div class="lab-panel-wrap"><div id="player-panel"></div></div>
+    </div>
+    <footer class="lab-footer"><span>球员是节点。共同参与的事件片段，是超边。</span><span>LOCAL DEVELOPMENT PREVIEW</span></footer>
+  </main>
+  <script type="module" src="./demo.js"></script>
+</body>
+</html>
