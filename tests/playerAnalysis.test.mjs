@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { analyzePlayer, derivePlayerMetrics, eventMinute, getMatchTimeRange, selectPlayerEdges } from "../src/js/playerAnalysis.js";
+import { analyzePlayer, comparePlayers, derivePlayerMetrics, eventMinute, getMatchTimeRange, getPlayerShots, selectPlayerEdges } from "../src/js/playerAnalysis.js";
 import { fixtureDataset } from "../demos/player-c/fixtures.js";
 
 const state = (patch = {}) => ({ selectedPlayerId: "demo-messi", selectedTeamId: null, mode: "collaboration", timeRange: [0, 125], ...patch });
@@ -206,4 +206,73 @@ test("all fixture hyperedges retain valid event references and participant evide
     }
     assert.ok(edge.player_ids.every(id => participants.has(id)));
   }
+});
+
+test("relationship summary retains unique partners, exact groups and mean cardinality", () => {
+  const model = analyzePlayer(fixtureDataset, state());
+  assert.equal(model.partnerCount, 3);
+  assert.equal(model.combinationCount, 3);
+  assert.equal(model.meanGroupSize, 3.2);
+  assert.equal(analyzePlayer(fixtureDataset, state({ timeRange: [70, 80] })).meanGroupSize, null);
+});
+
+test("player comparisons use raw units and percentage points rather than a fabricated score", () => {
+  const comparison = comparePlayers(fixtureDataset, state(), "demo-mbappe");
+  const rows = Object.fromEntries(comparison.rows.map(row => [row.key, row]));
+  assert.equal(rows.passes.primary, 7);
+  assert.equal(rows.passes.secondary, 3);
+  assert.equal(rows.passes.difference, 4);
+  assert.ok(Math.abs(rows.pass_accuracy.difference - (-100 / 7)) < 1e-10);
+  assert.equal(rows.pass_accuracy.maximum, 1);
+  assert.ok(Math.abs(rows.xg.difference - .07) < 1e-10);
+  assert.equal(rows.edge_count.primary, 5);
+  assert.equal(rows.edge_count.secondary, 3);
+});
+
+test("comparison tracks the current time and mode, and preserves unavailable values", () => {
+  const half = comparePlayers(fixtureDataset, state({ timeRange: [0, 45] }), "demo-mbappe");
+  assert.equal(half.rows.find(row => row.key === "passes").difference, 2);
+  assert.equal(half.rows.find(row => row.key === "pass_accuracy").difference, 0);
+  const missing = comparePlayers(fixtureDataset, state(), "demo-griezmann");
+  assert.equal(missing.rows.find(row => row.key === "xg").secondary, null);
+  assert.equal(missing.rows.find(row => row.key === "xg").difference, null);
+  assert.equal(comparePlayers(fixtureDataset, state(), "demo-messi"), null);
+  assert.equal(comparePlayers(fixtureDataset, state(), "missing"), null);
+  const dataset = copy(fixtureDataset);
+  delete dataset.competitionEdges;
+  assert.equal(comparePlayers(dataset, state({ mode: "competition" }), "demo-mbappe").rows.find(row => row.key === "edge_count").difference, null);
+});
+
+test("shot analysis uses source positions, xG, outcomes and current time range", () => {
+  const all = getPlayerShots(fixtureDataset, state());
+  assert.equal(all.shots.length, 3);
+  assert.equal(all.locatedCount, 3);
+  assert.deepEqual(all.shots[0].location, [102, 40]);
+  assert.equal(all.shots[0].eventId, "demo-shot1");
+  assert.equal(all.shots[0].result, "goal");
+  assert.equal(getPlayerShots(fixtureDataset, state({ timeRange: [70, 80] })).shots[0].eventId, "demo-shot2");
+  assert.equal(getPlayerShots(fixtureDataset, state({ selectedPlayerId: null })).shots.length, 0);
+});
+
+test("missing/invalid shot positions remain in the list instead of being invented or clamped", () => {
+  const dataset = copy(fixtureDataset);
+  for (const shot of dataset.events.filter(item => item.player_id === "demo-messi" && item.type === "Shot")) shot.location = [999, 20];
+  const result = getPlayerShots(dataset, state());
+  assert.equal(result.shots.length, 3);
+  assert.equal(result.locatedCount, 0);
+  assert.ok(result.shots.every(shot => shot.location === null));
+  const missing = getPlayerShots(dataset, state({ selectedPlayerId: "demo-griezmann" }));
+  assert.equal(missing.shots[0].result, "unknown");
+  assert.equal(missing.shots[0].xg, null);
+});
+
+test("shot views exclude penalty shootouts and report unknown times", () => {
+  const dataset = copy(fixtureDataset);
+  dataset.events.push(event("Shot", 140, { player_id: "demo-messi", period: 5, outcome: "Goal", xg: .8, location: [100, 40] }));
+  dataset.events.push(event("Shot", null, { player_id: "demo-messi", outcome: "Goal", location: [100, 40] }));
+  const before = copy(dataset);
+  const result = getPlayerShots(dataset, state({ timeRange: [0, 150] }));
+  assert.equal(result.shots.length, 3);
+  assert.equal(result.missingTimeCount, 1);
+  assert.deepEqual(dataset, before);
 });

@@ -57,3 +57,23 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
   .lab-course { display: none; }
 }
 @media (max-width: 380px) { .lab-main, .lab-masthead { padding-left: 12px; padding-right: 12px; } .lab-panel-wrap { padding: 15px; } }
+/* Keep the mobile preview focused on the player, with compact filter controls. */
+@media (max-width: 760px) {
+  .lab-controls { gap: 3px 14px; }
+  .lab-control-heading { grid-row: 1; }
+  .lab-label[for="demo-mode"] { grid-column: 1; grid-row: 2; }
+  .lab-label[for="demo-team"] { grid-column: 2; grid-row: 2; }
+  #demo-mode { grid-column: 1; grid-row: 3; }
+  #demo-team { grid-column: 2; grid-row: 3; }
+  .lab-range-label:has(label[for="demo-start"]) { grid-column: 1; grid-row: 4; }
+  .lab-range-label:has(label[for="demo-end"]) { grid-column: 2; grid-row: 4; }
+  #demo-start { grid-column: 1; grid-row: 5; }
+  #demo-end { grid-column: 2; grid-row: 5; }
+  .lab-presets { grid-row: 6; }
+  .lab-controls > hr:first-of-type { grid-row: 7; }
+  .lab-label[for="demo-case"] { grid-row: 8; }
+  #demo-case { grid-row: 9; }
+  .lab-controls > hr:last-of-type, .lab-controls .lab-signal { display: none; }
+  .lab-doc-link { grid-row: 10; margin-top: 12px; }
+  .lab-controls select { font-size: 12px; }
+}

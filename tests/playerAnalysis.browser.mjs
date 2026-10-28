@@ -46,6 +46,7 @@ before(async () => {
 after(async () => { await browser?.close(); if (server) await new Promise(done => server.close(done)); });
 beforeEach(async () => {
   page = await browser.newPage({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
+  page.setDefaultTimeout(8000);
   errors = [];
   page.on("pageerror", error => errors.push(error.message));
   page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
@@ -193,6 +194,84 @@ test("rapid state changes do not duplicate panels or corrupt the final view", as
   assert.equal(await metric("shots").textContent(), "2");
 });
 
+test("player comparison stays local, updates with time and can swap the focused player", async () => {
+  await page.getByRole("tab", { name: "球员对比", exact: true }).click();
+  await page.getByLabel("选择对比球员", { exact: true }).selectOption("demo-mbappe");
+  const passes = page.locator('[data-compare-metric="passes"]');
+  assert.equal(await passes.locator(".pa-compare-value-primary").textContent(), "7");
+  assert.equal(await passes.locator(".pa-compare-value-secondary").textContent(), "3");
+  assert.match(await passes.locator(".pa-compare-difference").textContent(), /\+4次/);
+  assert.match(await page.locator('[data-compare-metric="pass_accuracy"] .pa-compare-difference').textContent(), /-14.3 个百分点/);
+  assert.equal(await page.evaluate(() => window.playerCDemo.store.getState().selectedPlayerId), "demo-messi");
+  assert.equal(await page.evaluate(() => "comparisonPlayerId" in window.playerCDemo.store.getState()), false);
+  await capture("player-c-demo-comparison.png");
+  await page.getByRole("button", { name: "上半场", exact: true }).click();
+  assert.equal(await passes.locator(".pa-compare-value-primary").textContent(), "3");
+  assert.equal(await passes.locator(".pa-compare-value-secondary").textContent(), "1");
+  await page.getByRole("button", { name: "交换主副球员", exact: true }).click();
+  assert.equal(await page.locator(".pa-name").textContent(), "Kylian Mbappé");
+  assert.equal(await page.locator(".pa-compare-select").inputValue(), "demo-messi");
+});
+
+test("shot map and accessible list share selection, source evidence and missing-position states", async () => {
+  await page.getByRole("tab", { name: "射门分析", exact: true }).click();
+  assert.equal(await page.locator(".pa-shot-mark").count(), 3);
+  assert.equal(await page.locator(".pa-shot-item").count(), 3);
+  await page.locator(".pa-shot-item").nth(1).click();
+  assert.match(await page.locator(".pa-shot-detail").textContent(), /demo-shot2/);
+  assert.equal(await page.locator(".pa-shot-halo").count(), 1);
+  await capture("player-c-demo-shots.png");
+  await page.locator(".pa-shot-mark").first().click();
+  assert.match(await page.locator(".pa-shot-detail").textContent(), /demo-shot1/);
+  await page.getByRole("button", { name: "上半场", exact: true }).click();
+  assert.equal(await page.locator(".pa-shot-item").count(), 1);
+  await page.locator("#demo-case").selectOption("missing");
+  assert.equal(await page.locator(".pa-shot-mark").count(), 0);
+  assert.equal(await page.locator(".pa-shot-item").count(), 1);
+  assert.match(await page.locator(".pa-shot-item").textContent(), /xG N\/A/);
+  assert.match(await page.locator(".pa-shot-coordinate-note").textContent(), /缺失或无效位置/);
+});
+
+test("membership matrix selects the same full combination and reveals readable event sequences", async () => {
+  await page.getByRole("button", { name: "矩阵", exact: true }).click();
+  assert.equal(await page.locator(".pa-combo-matrix").isVisible(), true);
+  assert.equal(await page.locator(".pa-combinations").isVisible(), false);
+  assert.equal(await page.locator(".pa-matrix tbody tr").count(), 4);
+  assert.equal(await page.locator(".pa-matrix-focus .pa-member-present").count(), 3);
+  await page.locator(".pa-matrix-choice").first().click();
+  assert.equal(await page.locator(".pa-evidence-list > li").count(), 3);
+  await page.locator(".pa-evidence-list summary").first().click();
+  assert.match(await page.locator(".pa-event-description").first().textContent(), /Lionel Messi → Ángel Di María · 传球 · 成功/);
+  await capture("player-c-demo-matrix.png");
+  await page.getByRole("button", { name: "列表", exact: true }).click();
+  assert.equal(await page.locator(".pa-combination").first().getAttribute("aria-pressed"), "true");
+});
+
+test("partner drill-down changes the public player selection", async () => {
+  await page.locator(".pa-partner-drill").first().click();
+  assert.equal(await page.locator(".pa-name").textContent(), "Julián Álvarez");
+  assert.equal(await page.evaluate(() => window.playerCDemo.store.getState().selectedPlayerId), "demo-alvarez");
+  assert.equal(await metric("goals").textContent(), "1");
+});
+
+test("analysis tabs work with arrow keys and missing comparison metrics remain N/A", async () => {
+  await page.getByRole("tab", { name: "多人关系", exact: true }).focus();
+  await page.keyboard.press("ArrowRight");
+  assert.equal(await page.getByRole("tab", { name: "射门分析", exact: true }).getAttribute("aria-selected"), "true");
+  await page.keyboard.press("End");
+  assert.equal(await page.getByRole("tab", { name: "球员对比", exact: true }).getAttribute("aria-selected"), "true");
+  await page.getByLabel("选择对比球员", { exact: true }).selectOption("demo-griezmann");
+  assert.equal(await page.locator('[data-compare-metric="xg"] .pa-compare-value-secondary').textContent(), "N/A");
+  assert.match(await page.locator('[data-compare-metric="xg"] .pa-compare-difference').textContent(), /N\/A/);
+  await page.evaluate(() => {
+    const dataset = structuredClone(window.playerCDemo.dataset);
+    dataset.players = dataset.players.filter(player => player.player_id !== "demo-griezmann");
+    window.playerCDemo.mounted.updateDataset(dataset);
+  });
+  assert.equal(await page.locator(".pa-compare-select").inputValue(), "");
+  assert.equal(await page.locator(".pa-compare-empty").isVisible(), true);
+});
+
 test("mobile and intermediate widths fit without horizontal overflow", async () => {
   for (const width of [320, 360, 768]) {
     await page.setViewportSize({ width, height: 850 });
@@ -202,5 +281,14 @@ test("mobile and intermediate widths fit without horizontal overflow", async () 
     assert.equal(await page.locator(".pa-name").isVisible(), true);
     assert.equal(await metric("passes").textContent(), "7");
     if (width === 360) await capture("player-c-demo-mobile.png");
+    for (const tab of ["射门分析", "球员对比"]) {
+      await page.getByRole("tab", { name: tab, exact: true }).click();
+      if (tab === "球员对比") await page.locator(".pa-compare-select").selectOption("demo-mbappe");
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${tab} overflowed at ${width}px`);
+    }
+    await page.getByRole("tab", { name: "多人关系", exact: true }).click();
+    await page.getByRole("button", { name: "矩阵", exact: true }).click();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `matrix overflowed at ${width}px`);
+    await page.getByRole("button", { name: "列表", exact: true }).click();
   }
 });
