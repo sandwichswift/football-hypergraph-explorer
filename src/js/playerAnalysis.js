@@ -25,6 +25,7 @@ const isRegulationEvent = event => event && typeof event === "object" && Number(
 const validXg = value => finite(value) && value >= 0 && value <= 1;
 const unique = values => [...new Set(values)];
 const minutes = value => `${Number(value.toFixed(2))}′`;
+const periodName = value => ({ 1: "上半场", 2: "下半场", 3: "加时上半场", 4: "加时下半场" })[value] || "阶段未知";
 
 /** Normalized match time, in minutes. Never sort periods by wall-clock seconds. */
 export function eventMinute(event) {
@@ -90,7 +91,7 @@ export function derivePlayerMetrics(events, playerId, timeRange = null) {
     values.successful_passes = passOutcomes.filter(result => result === "complete" || result === "completed").length;
     values.pass_accuracy = passes.length ? values.successful_passes / passes.length : null;
     if (!passes.length) reasons.pass_accuracy = "本时段没有传球，成功率的分母为零。";
-  } else unknown(["successful_passes", "pass_accuracy"], "部分传球缺少可识别的结果，不能计算完整成功率。");
+  } else unknown(["successful_passes", "pass_accuracy"], "有传球结果未知或缺失，不能计算完整成功率。");
 
   const shotOutcomes = shots.map(event => outcome(event.outcome));
   if (shotOutcomes.every(result => result === "goal" || SHOT_NON_GOALS.has(result))) {
@@ -220,10 +221,14 @@ export function getPlayerShots(dataset = {}, inputState = {}) {
       ? event.location.slice(0, 2) : null;
     const result = outcome(event.outcome);
     shots.push({ key: `${identifier(event.event_id) ?? "unidentified"}-${index}`, eventId: identifier(event.event_id), minute,
+      period: [1, 2, 3, 4].includes(Number(event.period)) ? Number(event.period) : null,
+      eventIndex: Number.isInteger(event.event_index) ? event.event_index : null,
       location: position, xg: validXg(event.xg) ? event.xg : null,
       result: result === "goal" ? "goal" : SHOT_NON_GOALS.has(result) ? "other" : "unknown", outcome: event.outcome || "结果未知" });
   });
-  shots.sort((a, b) => a.minute - b.minute || a.key.localeCompare(b.key));
+  shots.sort((a, b) => (a.period ?? 0) - (b.period ?? 0)
+    || (a.eventIndex !== null && b.eventIndex !== null ? a.eventIndex - b.eventIndex : a.minute - b.minute)
+    || a.key.localeCompare(b.key));
   return { shots, available: Array.isArray(dataset.events), locatedCount: shots.filter(shot => shot.location).length, missingTimeCount };
 }
 
@@ -296,7 +301,7 @@ export function mountPlayerAnalysis(container, store, initialDataset = {}) {
     <div class="pa-content" hidden>
       <div class="pa-identity"><div class="pa-shirt" aria-hidden="true"></div><div class="pa-player-title"><span class="pa-team"></span><h3 class="pa-name"></h3><p class="pa-position"></p></div><button class="pa-clear" type="button">取消选择</button><span class="pa-profile-caption">ONE PLAYER. MULTIPLE CONNECTIONS.</span></div>
       <p class="pa-team-notice" hidden></p>
-      <section class="pa-performance" aria-label="球员比赛指标"><div class="pa-section-heading"><h3>个人表现</h3><span class="pa-range"></span></div><p class="pa-scope-note">大号数字按当前时段的事件计算；下方对照全场统计。</p><div class="pa-metrics"></div><details class="pa-methods"><summary>指标口径与缺失值</summary><ul><li>传球仅计该球员发起的传球；成功率＝明确成功传球／全部传球。没有传球时显示 N/A。</li><li>进球仅计结果明确为进球的射门，不计乌龙球；点球大战不计入事件指标。</li><li>时段助攻需每次传球提供明确的助攻标记，缺失时显示 N/A。</li><li>xG 仅汇总完整、有效的射门 xG；部分缺失时不把已知部分冒充总量。</li><li>全场对照优先使用比赛汇总统计；缺少字段时尝试从事件计算，已声明缺失的指标保留 N/A。</li></ul></details></section>
+      <section class="pa-performance" aria-label="球员比赛指标"><div class="pa-section-heading"><h3>个人表现</h3><span class="pa-range"></span></div><p class="pa-scope-note">大号数字按共享分钟区间计算；下方对照全场统计。补时与下一阶段的分钟可能重叠，当前不限定比赛阶段。</p><div class="pa-metrics"></div><details class="pa-methods"><summary>指标口径与缺失值</summary><ul><li>传球仅计该球员发起的传球；结果全部可识别时，成功率＝明确成功传球／全部传球。无传球或存在未知结果时显示 N/A。</li><li>进球仅计结果明确为进球的射门，不计乌龙球；点球大战不计入事件指标。</li><li>时段助攻需每次传球提供明确的助攻标记，缺失时显示 N/A。</li><li>xG 仅汇总完整、有效的射门 xG；部分缺失时不把已知部分冒充总量。</li><li>全场对照优先使用比赛汇总统计；缺少字段时尝试从事件计算，已声明缺失的指标保留 N/A。</li><li>比赛概览的阶段、事件类型筛选只作用于概览；本面板与关系分析共享球队、分钟和球员选择。</li></ul></details></section>
       <nav class="pa-tabs" role="tablist" aria-label="球员分析视角">
         <button class="pa-tab" type="button" role="tab" id="${uid}-tab-relations" aria-controls="${uid}-relations" data-tab="relations">多人关系</button>
         <button class="pa-tab" type="button" role="tab" id="${uid}-tab-shots" aria-controls="${uid}-shots" data-tab="shots">射门分析</button>
@@ -490,7 +495,7 @@ export function mountPlayerAnalysis(container, store, initialDataset = {}) {
     find(".pa-shot-coordinate-note").textContent = `按 120 × 80 球场坐标原样展示，不推断进攻方向。${shots.length - locatedCount ? `${shots.length - locatedCount} 次缺失或无效位置保留在清单中。` : ""}${analysis.missingTimeCount ? `${analysis.missingTimeCount} 次射门时间缺失，未纳入当前时段。` : ""}`;
     const selected = shots.find(shot => shot.key === selectedShotKey);
     find(".pa-shot-detail").textContent = selected
-      ? `${minutes(selected.minute)} · ${selected.outcome} · xG ${formatMetric("xg", selected.xg)} · 事件 ${selected.eventId || "ID 未提供"}${selected.location ? ` · 位置 (${selected.location.join(", ")})` : " · 位置未提供"}`
+      ? `${periodName(selected.period)} · ${minutes(selected.minute)} · ${selected.outcome} · xG ${formatMetric("xg", selected.xg)} · 事件 ${selected.eventId || "ID 未提供"}${selected.location ? ` · 位置 (${selected.location.join(", ")})` : " · 位置未提供"}`
       : "选择一次射门，查看时间、结果与事件依据。";
     const list = find(".pa-shot-list");
     list.replaceChildren();
@@ -500,7 +505,7 @@ export function mountPlayerAnalysis(container, store, initialDataset = {}) {
       button.type = "button";
       button.dataset.shotKey = shot.key;
       button.setAttribute("aria-pressed", String(shot.key === selectedShotKey));
-      button.append(element(document, "span", "pa-shot-index", String(index + 1)), element(document, "span", "pa-shot-minute", minutes(shot.minute)), element(document, "span", "pa-shot-result", shot.result === "goal" ? "进球" : shot.result === "other" ? "未进球" : "结果未知"), element(document, "span", "pa-shot-xg", `xG ${formatMetric("xg", shot.xg)}`));
+      button.append(element(document, "span", "pa-shot-index", String(index + 1)), element(document, "span", "pa-shot-minute", `${minutes(shot.minute)} · ${periodName(shot.period)}`), element(document, "span", "pa-shot-result", shot.result === "goal" ? "进球" : shot.result === "other" ? "未进球" : "结果未知"), element(document, "span", "pa-shot-xg", `xG ${formatMetric("xg", shot.xg)}`));
       if (!shot.location) button.append(element(document, "span", "pa-shot-position-missing", "位置缺失"));
       row.append(button);
       list.append(row);
@@ -583,7 +588,7 @@ export function mountPlayerAnalysis(container, store, initialDataset = {}) {
           const type = { Pass: "传球", Shot: "射门", Pressure: "施压", Carry: "带球", Duel: "争抢" }[event.type] || event.type || "事件类型未知";
           const result = outcome(event.outcome);
           const resultLabel = result === "complete" || result === "completed" ? "成功" : result === "goal" ? "进球" : PASS_FAILURES.has(result) ? "未完成" : event.outcome;
-          entry.append(element(document, "span", "pa-event-description", `${eventMinute(event) === null ? "时间未知" : minutes(eventMinute(event))} · ${actor}${recipient ? ` → ${recipient}` : ""} · ${type}${resultLabel ? ` · ${resultLabel}` : ""}`));
+          entry.append(element(document, "span", "pa-event-description", `${periodName(event.period)} · ${eventMinute(event) === null ? "时间未知" : minutes(eventMinute(event))} · ${actor}${recipient ? ` → ${recipient}` : ""} · ${type}${resultLabel ? ` · ${resultLabel}` : ""}`));
         }
         entry.append(element(document, "code", "pa-event-id", `${id}${event ? "" : "（事件未载入）"}`));
         details.append(entry);
@@ -696,6 +701,10 @@ export function mountPlayerAnalysis(container, store, initialDataset = {}) {
       nodes.full.textContent = `全场 ${formatMetric(key, model.full.values[key])} · ${model.full.sources[key] === "stats" ? "比赛统计" : "事件计算"}`;
       nodes.reason.textContent = model.current.reasons[key] ?? (key === "passes" && model.current.values.successful_passes != null ? `其中成功 ${model.current.values.successful_passes} 次` : "");
       if (model.full.reasons[key]) nodes.full.textContent += `（${model.full.reasons[key]}）`;
+      if (key === "pass_accuracy" && model.full.sources[key] === "stats" && finite(model.full.values[key])
+        && (dataset.events ?? []).some(event => isRegulationEvent(event) && identifier(event.player_id) === model.state.selectedPlayerId && event.type === "Pass" && outcome(event.outcome) === "unknown")) {
+        nodes.full.textContent += "（按已确认成功数／全部传球计算，包含未知结果）";
+      }
       const fullValue = model.full.values[key];
       const share = key === "pass_accuracy" ? value : finite(value) && finite(fullValue) && fullValue > 0 && value <= fullValue ? value / fullValue : null;
       nodes.track.hidden = !finite(share);

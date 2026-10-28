@@ -11,20 +11,25 @@
 <body>
   <main id="football-app" class="app-shell">
     <header class="app-header">
-      <p class="app-eyebrow">FOOTBALL / RELATIONSHIPS / TIME</p>
-      <h1>Football HyperGraph Explorer</h1>
+      <div class="app-header-top"><p class="app-eyebrow">FOOTBALL / RELATIONSHIPS / TIME</p><span class="app-edition">2022 WORLD CUP · FINAL</span></div>
+      <h1>从一位球星，看见整场比赛。</h1>
+      <p class="app-subtitle">Football HyperGraph Explorer <span>个人表现、多人关系与时间的交互探索</span></p>
       <p id="match-label">比赛由已校验的数据文件确定 · 首选 2022 世界杯决赛</p>
       <p id="app-status" role="status" aria-live="polite">正在启动…</p>
     </header>
-    <pre id="app-errors" class="app-errors" role="alert" hidden></pre>
+    <details class="app-diagnostics"><summary>数据与模块载入说明</summary><pre id="app-errors" class="app-errors" hidden></pre><p>只使用已校验的赛事事件。尚未提供的关系与有效的空关系分别显示；射门和进球不含点球大战。</p></details>
     <noscript>请启用 JavaScript，并通过本地 HTTP 服务打开页面。</noscript>
-    <div class="app-grid">
-      <section class="app-card app-overview" aria-labelledby="overview-title"><h2 id="overview-title">比赛概览</h2><div id="data-explorer">等待 A 模块</div></section>
+    <div class="app-card app-timeline" id="competition-timeline" aria-label="模式与时间控制">等待 D 模块</div>
+    <nav class="app-workspaces" role="tablist" aria-label="探索视角">
+      <button type="button" role="tab" id="workspace-focus" aria-label="球星与关系" aria-controls="focus-workspace" aria-selected="true" data-workspace="focus">球星与关系 <span>PLAYER FOCUS</span></button>
+      <button type="button" role="tab" id="workspace-overview" aria-label="比赛概览" aria-controls="overview-workspace" aria-selected="false" tabindex="-1" data-workspace="overview">比赛概览 <span>MATCH OVERVIEW</span></button>
+    </nav>
+    <div id="focus-workspace" class="app-grid" role="tabpanel" aria-labelledby="workspace-focus" data-workspace-panel="focus">
       <section class="app-card app-graph" aria-labelledby="graph-title"><h2 id="graph-title">多人关系超图</h2><div id="hypergraph">等待 B 的唯一主渲染器</div></section>
       <aside class="app-card app-player" aria-label="球星分析"><div id="player-analysis">等待 C 模块</div></aside>
-      <div class="app-card app-timeline" id="competition-timeline" aria-label="模式与时间控制">等待 D 模块</div>
     </div>
-    <footer class="app-footer">对抗关系来自可追溯的短事件窗口推断；不表示完整逐帧站位。相交的超边片段完整计一次。使用说明：<a href="../docs/INTEGRATION_D.md">模块 D 与项目集成</a>。</footer>
+    <section id="overview-workspace" class="app-overview" role="tabpanel" aria-labelledby="workspace-overview" data-workspace-panel="overview" hidden><div id="data-explorer">等待 A 模块</div></section>
+    <footer class="app-footer"><div class="app-source"><img src="./assets/statsbomb-logo.png" alt="StatsBomb" width="124"><span>数据来源：<a href="https://github.com/hudl/open-data">StatsBomb Open Data</a> · 2022 世界杯决赛</span></div><p>对抗关系来自可追溯的短事件窗口推断；不表示完整逐帧站位。相交的超边片段完整计一次。使用说明：<a href="../docs/INTEGRATION_D.md">模块 D 与项目集成</a>。</p></footer>
   </main>
 </body>
 </html>

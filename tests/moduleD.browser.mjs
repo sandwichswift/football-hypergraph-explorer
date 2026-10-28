@@ -48,7 +48,12 @@ async function routeFixture({ emptyCompetition = false, missingB = false, malfor
 async function state() { return page.evaluate(async () => (await import("/src/js/state.js")).getState()); }
 async function capture(name) {
   await mkdir(resolve(root, "docs/screenshots"), { recursive: true });
-  await page.screenshot({ path: resolve(root, "docs/screenshots", name), fullPage: true, animations: "disabled" });
+  const viewport = page.viewportSize();
+  const height = await page.evaluate(() => document.body.scrollHeight);
+  await page.setViewportSize({ width: viewport.width, height: height + 64 });
+  await page.evaluate(() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done))));
+  await page.screenshot({ path: resolve(root, "docs/screenshots", name), clip: { x: 0, y: 0, width: viewport.width, height }, animations: "disabled" });
+  await page.setViewportSize(viewport);
 }
 
 before(async () => {
@@ -64,7 +69,7 @@ before(async () => {
   });
   await new Promise(done => server.listen(0, "127.0.0.1", done));
   base = `http://127.0.0.1:${server.address().port}`;
-  const options = { headless: true };
+  const options = { headless: true, args: ["--disable-gpu"] };
   if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE) options.executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
   else options.channel = process.env.PLAYWRIGHT_BROWSER_CHANNEL || "chrome";
   browser = await chromium.launch(options);
@@ -76,7 +81,8 @@ beforeEach(async () => {
 });
 afterEach(async () => { await page?.close(); assert.deepEqual(pageErrors, []); });
 
-test("actual repository shows actionable missing-data state without mock substitution", async () => {
+test("missing required A data shows an actionable state without mock substitution", async () => {
+  await page.route("**/data/processed/*.json", route => route.fulfill({ status: 404, body: "Not prepared" }));
   await page.goto(`${base}/src/`);
   await page.getByText("未能启动真实比赛视图。", { exact: true }).waitFor();
   assert.match(await page.locator("#app-errors").textContent(), /players.json/);

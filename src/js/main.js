@@ -18,9 +18,10 @@ const uniqueStrings = values => Array.isArray(values) && values.every(id) && new
 const sameSet = (left, right) => left.size === right.size && [...left].every(value => right.has(value));
 
 /** Reject broken references before any module draws or counts them. */
-export function validateDataset(dataset) {
+export function validateDataset(dataset, { allowUnavailableEdges = false } = {}) {
   const errors = [];
   for (const key of ["players", "events", "collaborationEdges", "competitionEdges"]) {
+    if (allowUnavailableEdges && key.endsWith("Edges") && dataset[key] === undefined) continue;
     if (!Array.isArray(dataset[key])) errors.push(`${DATA_FILES[key]} 必须是 JSON 数组；缺失文件不能用空数组冒充。`);
   }
   if (!dataset.stats || typeof dataset.stats !== "object" || Array.isArray(dataset.stats)
@@ -53,7 +54,7 @@ export function validateDataset(dataset) {
   }
   const allEdgeIds = new Set();
   for (const [key, type] of [["collaborationEdges", "collaboration"], ["competitionEdges", "competition"]]) {
-    for (const edge of dataset[key]) {
+    for (const edge of dataset[key] ?? []) {
       const label = `${DATA_FILES[key]} / ${edge?.edge_id ?? "未知边"}`;
       if (!edge || !id(edge.edge_id) || allEdgeIds.has(edge.edge_id) || edge.type !== type || edge.weight !== 1
         || !uniqueStrings(edge.player_ids) || edge.player_ids.length < 3 || !edge.player_ids.every(value => players.has(value))
@@ -87,17 +88,24 @@ export function validateDataset(dataset) {
   return dataset;
 }
 
-export async function loadDataset({ baseUrl = new URL("../../data/processed/", import.meta.url), fetchImpl = globalThis.fetch } = {}) {
+export async function loadDataset({ baseUrl = new URL("../../data/processed/", import.meta.url), fetchImpl = globalThis.fetch,
+  allowUnavailableEdges = false, onUnavailableEdge = () => {} } = {}) {
   const entries = Object.entries(DATA_FILES);
   const results = await Promise.allSettled(entries.map(async ([key, filename]) => {
     const response = await fetchImpl(new URL(filename, baseUrl), { cache: "no-store" });
+    // Only a genuine 404 means an undelivered optional relation source. Bad JSON,
+    // network failures, 500s and invalid evidence still stop the application.
+    if (allowUnavailableEdges && key.endsWith("Edges") && response.status === 404) {
+      onUnavailableEdge({ key, filename });
+      return [key, undefined];
+    }
     if (!response.ok) throw new Error(`HTTP ${response.status}；请提供 data/processed/${filename}`);
     try { return [key, await response.json()]; }
     catch { throw new Error("内容不是有效 JSON；请检查预处理输出，勿返回 HTML 错误页。"); }
   }));
   const errors = results.flatMap((result, index) => result.status === "rejected" ? [`${entries[index][1]}：${result.reason.message}`] : []);
   if (errors.length) throw new Error(errors.join("\n"));
-  return validateDataset(Object.fromEntries(results.map(result => result.value)));
+  return validateDataset(Object.fromEntries(results.map(result => result.value)), { allowUnavailableEdges });
 }
 
 /** Import failures remain local; missing B never causes a parallel renderer. */
@@ -111,11 +119,19 @@ export async function mountModules(document, activeStore, dataset, importModule 
       if (result.status === "rejected") throw new Error(`${spec.path} 未就绪或其依赖加载失败：${result.reason.message}`);
       if (typeof result.value[spec.mount] !== "function") throw new Error(`未导出 ${spec.mount}(container, store, dataset)`);
       container.replaceChildren();
-      const handle = await result.value[spec.mount](container, activeStore, dataset);
+      const handle = await result.value[spec.mount](container, activeStore, dataset, spec.container === "data-explorer" ? { theme: "light" } : undefined);
       handles.push(handle);
     } catch (error) {
       errors.push(`${spec.name}：${error.message}`);
-      if (container) { const message = document.createElement("p"); message.className = "app-module-error"; message.textContent = `${spec.name} 尚未挂载。${error.message}`; container.replaceChildren(message); }
+      if (container) {
+        const message = document.createElement("p");
+        message.className = "app-module-error";
+        message.textContent = spec.container === "hypergraph"
+          ? "多人关系主图暂未接入。可继续使用球员指标、射门分布、球员对比及已有关系片段的成员分析。"
+          : `${spec.name} 尚未挂载。${error.message}`;
+        container.replaceChildren(message);
+        if (spec.container === "hypergraph") container.closest?.(".app-graph")?.classList.add("app-graph-pending");
+      }
     }
   }
   return { errors, destroy() {
@@ -127,27 +143,65 @@ export async function mountModules(document, activeStore, dataset, importModule 
   } };
 }
 
+/** Page navigation is local UI state, never an extra shared store field. */
+export function mountWorkspace(document, activeStore) {
+  const tabs = [...document.querySelectorAll("[data-workspace]")];
+  const panels = [...document.querySelectorAll("[data-workspace-panel]")];
+  let selectedPlayerId = activeStore.getState().selectedPlayerId;
+  const select = name => {
+    for (const tab of tabs) {
+      const active = tab.dataset.workspace === name;
+      tab.setAttribute("aria-selected", String(active)); tab.tabIndex = active ? 0 : -1;
+    }
+    for (const panel of panels) panel.hidden = panel.dataset.workspacePanel !== name;
+  };
+  const listeners = tabs.map((tab, index) => {
+    const click = () => select(tab.dataset.workspace);
+    const keydown = event => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1
+        : (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+      select(tabs[next].dataset.workspace); tabs[next].focus();
+    };
+    tab.addEventListener("click", click); tab.addEventListener("keydown", keydown);
+    return () => { tab.removeEventListener("click", click); tab.removeEventListener("keydown", keydown); };
+  });
+  const off = activeStore.subscribe(state => {
+    if (state.selectedPlayerId && state.selectedPlayerId !== selectedPlayerId) select("focus");
+    selectedPlayerId = state.selectedPlayerId;
+  });
+  select("focus");
+  return { destroy() { off(); listeners.forEach(remove => remove()); } };
+}
+
 export async function startApp(document = globalThis.document) {
   const status = document.getElementById("app-status");
   const errors = document.getElementById("app-errors");
-  status.textContent = "正在读取五份比赛数据…";
-  let mounted;
+  status.textContent = "正在读取比赛数据…";
+  let mounted, workspace;
   try {
-    const dataset = await loadDataset();
-    store.setState({ selectedMatchId: dataset.stats.match_id, selectedPlayerId: null, selectedTeamId: null, mode: "collaboration", timeRange: getDatasetTimeRange(dataset) });
+    const unavailable = [];
+    const dataset = await loadDataset({ allowUnavailableEdges: true, onUnavailableEdge: value => unavailable.push(value) });
+    store.setState({ selectedMatchId: dataset.stats.match_id, selectedPlayerId: null, selectedTeamId: null,
+      mode: !Array.isArray(dataset.collaborationEdges) && Array.isArray(dataset.competitionEdges) ? "competition" : "collaboration", timeRange: getDatasetTimeRange(dataset) });
     document.getElementById("match-label").textContent = `比赛 ${dataset.stats.match_id} · ${[...new Set(dataset.players.map(player => player.team_name || player.team_id))].join(" / ")}`;
     mounted = await mountModules(document, store, dataset);
-    errors.hidden = mounted.errors.length === 0;
-    errors.textContent = mounted.errors.join("\n");
-    status.textContent = mounted.errors.length ? "数据已校验；部分模块尚未交付，请查看各区域提示。"
-      : `已载入 ${dataset.events.length} 条赛事事件；协作 ${dataset.collaborationEdges.length} 条，对抗 ${dataset.competitionEdges.length} 条。`;
+    workspace = mountWorkspace(document, store);
+    const messages = [...unavailable.map(({ key, filename }) => `${key === "collaborationEdges" ? "协作" : "对抗"}关系文件尚未交付：${filename}；显示为未提供，不计作零条关系。`), ...mounted.errors];
+    errors.hidden = messages.length === 0;
+    errors.textContent = messages.join("\n");
+    const count = edges => Array.isArray(edges) ? `${edges.length} 条` : "未提供";
+    status.textContent = `已载入 ${dataset.events.length} 条赛事事件；协作 ${count(dataset.collaborationEdges)}，对抗 ${count(dataset.competitionEdges)}。${mounted.errors.length ? "部分模块尚未交付，已有视图可继续使用。" : ""}`;
   } catch (error) {
+    mounted?.destroy();
+    document.querySelector(".app-diagnostics").open = true;
     status.textContent = "未能启动真实比赛视图。";
     errors.hidden = false;
-    errors.textContent = `${error.message}\n请按 docs/INTEGRATION_D.md 交付 A/B 数据，并从项目根目录通过 HTTP 打开 /src/。空对抗数组允许加载；缺少文件是另一种状态。`;
-    for (const spec of MODULES) document.getElementById(spec.container).textContent = "等待五份有效 JSON；未填入模拟比赛数据。";
+    errors.textContent = `${error.message}\n请按 README 重建比赛数据，并从项目根目录通过 HTTP 打开 /src/。无效数据不会由模拟比赛记录替代。`;
+    for (const spec of MODULES) document.getElementById(spec.container).textContent = "等待有效比赛数据；未填入模拟记录。";
   }
-  return { destroy() { mounted?.destroy(); } };
+  return { destroy() { workspace?.destroy(); mounted?.destroy(); } };
 }
 
 if (typeof document !== "undefined" && document.getElementById("football-app")) {

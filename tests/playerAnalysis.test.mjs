@@ -276,3 +276,13 @@ test("shot views exclude penalty shootouts and report unknown times", () => {
   assert.equal(result.missingTimeCount, 1);
   assert.deepEqual(dataset, before);
 });
+
+test("shot chronology follows periods and source event order across clock regressions", () => {
+  const dataset = copy(fixtureDataset);
+  dataset.events = [
+    event("Shot", 91, { event_id: "extra", player_id: "demo-messi", period: 3, event_index: 300 }),
+    event("Shot", 96, { event_id: "stoppage", player_id: "demo-messi", period: 2, event_index: 200 }),
+    event("Shot", 95, { event_id: "regressed", player_id: "demo-messi", period: 2, event_index: 201 }),
+  ];
+  assert.deepEqual(getPlayerShots(dataset, state()).shots.map(shot => shot.eventId), ["stoppage", "regressed", "extra"]);
+});

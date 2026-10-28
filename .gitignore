@@ -26,6 +26,8 @@ data/raw/
 data/processed/players.json
 data/processed/events.json
 data/processed/stats.json
+data/processed/collaboration_edges.json
+data/processed/competition_edges.json
 output/
 .playwright-cli/
 .pytest_cache/

@@ -553,5 +553,8 @@ test("mobile 320px and 390px have no document overflow while the event table scr
     assert.ok(sizes.tableScroll > sizes.tableClient, "event table should scroll within its own container");
     assert.equal(await count("events"), 4386);
     if (width === 390) await capture("data-a-mobile.png");
+    await openTab("players");
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${width}px roster fits its parent`);
+    await openTab("events");
   }
 });

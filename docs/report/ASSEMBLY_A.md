@@ -7,8 +7,8 @@
 | Introduction、Dataset and Preprocessing | A章节已有 | 合并时统一编号、引用和全文措辞 |
 | A案例、截图与AI说明 | 已有真实材料 | 组内确认最终截图与讲述顺序 |
 | Hypergraph Modeling and Visualization | 待B提供 | 协作超边规则、主图代码、真实截图、测试和AI说明 |
-| Star Player Analysis | 有C原章节和模拟截图 | C确认真实数据案例、正式展示文件与最终AI说明；不能直接用模拟图解释真实决赛 |
-| Competition and Temporal Analysis | 待D提供 | 对抗证据规则、正式时间轴与总装、真实截图、测试和AI说明 |
+| Star Player Analysis | C已补真实A/D联调、案例、4张真实截图及AI草稿 | B接入后的实际主图高亮、C正式展示文件与个人审阅 |
+| Competition and Temporal Analysis | D已交付算法、控件、总装、章节草稿；真实提取385条边 | B实际双模式主图、D正式展示文件与个人审阅 |
 | Results and Discussion | A有本模块案例 | B/C/D各自有来源依据的案例，全组限制与完整页面截图 |
 | Conclusion | 待D初稿及四人审核 | 只总结最终实际完成的功能 |
 | References & AI Usage | A已记录自身范围 | 收集其他成员来源、工具用途和实际人工审核状态 |

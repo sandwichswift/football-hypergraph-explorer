@@ -114,3 +114,26 @@ test("all mounts receive the identical dataset/store; missing B is isolated and 
   assert.equal(result.errors.length, 1); assert.match(result.errors[0], /B not delivered/);
   assert.equal(calls.length, 3); result.destroy(); result.destroy(); assert.equal(calls.length, 6);
 });
+
+test("partial integration preserves 404 relation sources as unavailable, not observed empty", async () => {
+  const unavailable = [];
+  const dataset = await loadDataset({ baseUrl: "http://test/", allowUnavailableEdges: true,
+    onUnavailableEdge: value => unavailable.push(value.key), fetchImpl: async url => {
+      const key = Object.keys(DATA_FILES).find(key => DATA_FILES[key] === url.pathname.slice(1));
+      return key === "collaborationEdges" ? { ok: false, status: 404 } : { ok: true, json: async () => copy()[key] };
+    } });
+  assert.equal(dataset.collaborationEdges, undefined);
+  assert.deepEqual(unavailable, ["collaborationEdges"]);
+  assert.equal(analyzePlayer(dataset, { selectedPlayerId: "mock-a" }).available, false);
+  assert.equal(validateDataset(dataset, { allowUnavailableEdges: true }), dataset);
+  assert.throws(() => validateDataset(dataset), /collaboration_edges/);
+});
+
+test("partial integration never hides server failures or malformed edge JSON", async () => {
+  for (const failure of [{ ok: false, status: 500 }, { ok: true, json: async () => { throw Error("bad JSON"); } }, { ok: true, json: async () => null }]) {
+    await assert.rejects(loadDataset({ baseUrl: "http://test/", allowUnavailableEdges: true, fetchImpl: async url => {
+      const key = Object.keys(DATA_FILES).find(key => DATA_FILES[key] === url.pathname.slice(1));
+      return key === "collaborationEdges" ? failure : { ok: true, json: async () => copy()[key] };
+    } }));
+  }
+});

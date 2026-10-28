@@ -1,6 +1,26 @@
 # Football HyperGraph Explorer
 
-Data Visualization 期中团队项目。当前 A 模块提供 2022 世界杯决赛的真实数据处理和可交互比赛概览，并在独立验收页联动仓库已有 C 球员面板。B 的主超图、D 的对抗超边和整体页面尚未接入；这不是四人项目的最终提交版。
+Data Visualization 期中团队项目。当前已整合 A 的真实数据与比赛概览、C 的球星关系/射门/对比分析、D 的对抗建模与正式状态/时间控件。B 的协作建模和唯一主超图尚未交付，页面明确提示待接入；这不是四模块全部完成的最终提交版。
+
+## 运行整合版（推荐）
+
+需要 Python 3.10+。在仓库根目录运行：
+
+```bash
+python3 scripts/prepare_data.py
+python3 -m http.server 8000 --bind 127.0.0.1
+```
+
+Windows 可将 `python3` 换成 `python`。浏览器打开 [整合页面](http://127.0.0.1:8000/src/)。有完整源数据缓存时，使用 `python3 scripts/prepare_data.py --offline` 重建，无需网络。
+
+脚本依次校验/下载 A 的固定版本数据、生成三份基础 JSON，再运行 D 的对抗建模；本场得到 385 条原始事件窗口超边。没有 B 脚本时不会生成空协作文件。正式页面只将关系文件的 HTTP 404 视为“未提供”；基础数据缺失、非法 JSON、错误事件证据或服务器故障仍会报错。严格的五文件加载 API 默认行为保持不变。
+
+1. 在“球星与关系”选择 Messi 或 Mbappé，查看时段指标与全场对照。页签提供多人组合/成员矩阵与事件证据、射门分布和球员对比。
+2. 顶部模式、分钟区间和球队由 D 的正式 store 同步。当前只有对抗数据时默认对抗模式；切换协作会显示数据未提供，个人指标仍可查看。
+3. “比赛概览”使用 A 的浅色仪表盘；从概览选人会回到球星视角。A 的阶段和事件类型是其本地筛选，不会成为 C 的阶段筛选。
+4. 补时与下一阶段的原始分钟可能重叠。C 按共享分钟过滤、射门清单按阶段和事件顺序显示；未知成功率、时段助攻仍保留 N/A。
+
+原始/标准化赛事数据及派生超边在本地重建，不提交逐事件 JSON；署名、许可与来源约束沿用 A 的数据说明。已移除 D 在输入缺失时产生的空占位文件，避免把它当成真实提取结果。详情与验证记录见 [整合说明](docs/INTEGRATION_ACD.md)。
 
 ## 先运行 A 模块
 
@@ -107,7 +127,9 @@ C 模块在含未知传球结果的时段将成功率显示为 `N/A`；时段助
 | `data/processed/players.json`、`events.json`、`stats.json` | 本地重建的三份共享数据 |
 | `src/js/dataExplorer.js`、`src/css/dataExplorer.css` | A 比赛概览模块 |
 | `demos/data-a/` | A 的真实数据独立验收页面 |
-| `src/js/playerAnalysis.js` | 已有 C 球员分析模块 |
+| `src/js/playerAnalysis.js` | C 关系/射门/对比分析，已接入真实 A/D 数据 |
+| `src/index.html` | A/C/D 整合入口；B 主超图待接入 |
+| `scripts/prepare_data.py` | 重建当前已交付数据的一条命令入口 |
 | `demos/player-c/` | C 原有模拟数据测试页，不能用作真实比赛结论 |
 | [docs/DATA_A.md](docs/DATA_A.md) | 数据字典、统计口径、时间异常、交接接口 |
 | [docs/ACCEPTANCE_A.md](docs/ACCEPTANCE_A.md) | 实际验收结果与截图（当前 109 次应用测试执行通过） |
@@ -117,7 +139,7 @@ C 模块在含未知传球结果的时段将成功率显示为 `N/A`；时段助
 | [docs/report/ASSEMBLY_A.md](docs/report/ASSEMBLY_A.md) | 后续整组报告与打包的依赖清单 |
 | [docs/slides/part_A_outline.md](docs/slides/part_A_outline.md) | 三页、约三分钟展示文字提纲 |
 | [docs/slides/part_A.pptx](docs/slides/part_A.pptx) | 可编辑的三页 A 展示幻灯片，含讲稿、来源与 2026-10-28 新截图 |
-| [docs/PLAYER_C.md](docs/PLAYER_C.md) | C 模块原有说明 |
+| [docs/PLAYER_C.md](docs/PLAYER_C.md) | C 模块接口、指标和真实数据联调说明 |
 
 原始文件与三份本地数据已加入 `.gitignore`。数据受 StatsBomb 许可约束，不能把公开可下载理解为任意再分发授权。源码交接使用下载和重建脚本；公开发布或作业打包时按 [官方许可](docs/data_source/StatsBomb-LICENSE.pdf) 处理数据，不直接公开分发逐事件文件。展示分析时保留 StatsBomb 来源和官方标志。
 

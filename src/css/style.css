@@ -5,20 +5,40 @@ body { margin: 0; }
 [hidden] { display: none !important; }
 .app-shell { max-width: 1680px; margin: auto; padding: 28px; }
 .app-header { padding: 8px 0 20px; }
+.app-header-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.app-edition { font-size: 11px; color: #597269; letter-spacing: .1em; }
+.app-subtitle { color: #46645b; font-size: 14px; line-height: 1.8; }
+.app-subtitle span { margin-left: 14px; color: #71847d; }
 .app-eyebrow { color: #32735f; font-size: 12px; font-weight: 700; letter-spacing: .16em; }
 .app-header h1 { font-size: clamp(25px, 3vw, 40px); margin: 8px 0; letter-spacing: -.035em; overflow-wrap: anywhere; }
 #match-label, #app-status { color: #4b656b; font-size: 14px; }
-.app-grid { display: grid; grid-template-columns: minmax(180px, .7fr) minmax(300px, 2fr) minmax(290px, 1fr); gap: 18px; align-items: start; }
+.app-grid { display: grid; grid-template-columns: minmax(300px, .8fr) minmax(500px, 1.2fr); gap: 20px; align-items: start; }
 .app-card { background: #fff; border: 1px solid #d7e2dd; border-radius: 16px; padding: 20px; min-width: 0; }
 .app-card > h2 { font-size: 18px; margin: 0 0 18px; }
 .app-graph { min-height: 450px; }
 #hypergraph { min-height: 360px; }
 .app-timeline { grid-column: 1 / -1; }
-.app-player { max-height: 700px; overflow: auto; }
+.app-player { padding: 24px; overflow: hidden; }
+.app-graph-pending { grid-column: 1 / -1; min-height: 0; padding: 18px 24px; background: #eaf0ec; }
+.app-graph-pending h2 { display: inline; font-size: 14px; }
+.app-graph-pending #hypergraph { min-height: 0; }
+.app-graph-pending .app-module-error { background: none; border: 0; padding: 0; margin: 8px 0 0; font-size: 13px; color: #526b60; }
+.app-grid:has(.app-graph-pending) .app-player { grid-column: 1 / -1; }
+.app-workspaces { display: flex; gap: 26px; border-bottom: 1px solid #ccd9d2; margin: 28px 0 22px; }
+.app-workspaces button { border: 0; border-bottom: 3px solid transparent; background: none; font: inherit; color: #63796f; padding: 0 0 14px; cursor: pointer; font-weight: 700; }
+.app-workspaces button span { margin-left: 8px; font-size: 10px; letter-spacing: .08em; font-weight: 500; }
+.app-workspaces button[aria-selected="true"] { color: #17634e; border-bottom-color: #17634e; }
+.app-workspaces button:focus-visible { outline: 3px solid #338dc2; outline-offset: 4px; }
+.app-diagnostics { margin-bottom: 20px; color: #65776f; font-size: 12px; line-height: 1.7; }
+.app-diagnostics summary { cursor: pointer; width: fit-content; }
+.app-diagnostics .app-errors { font-size: 12px; }
+.app-diagnostics:has(.app-errors:not([hidden])) summary::after { content: " · 有待接入项或错误"; color: #9b542a; }
 .app-errors, .app-module-error { white-space: pre-wrap; overflow-wrap: anywhere; color: #813e25; background: #fff0e5; border: 1px solid #edc8b0; border-radius: 10px; padding: 16px; font: inherit; line-height: 1.7; }
 .app-errors { margin: 0 0 20px; }
 .app-footer { color: #526a70; font-size: 13px; line-height: 1.8; padding: 22px 0; }
 .app-footer a { color: #12664f; }
+.app-source { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.app-source img { width: 124px; height: auto; background: white; border-radius: 6px; padding: 8px; }
 .ct-panel { color: #183e3c; font-size: 14px; }
 .ct-panel .ct-heading { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
 .ct-panel h2 { font-size: 19px; margin: 0 0 14px; }
@@ -44,5 +64,6 @@ body { margin: 0; }
 .ct-panel input[type="range"] { width: 100%; min-width: 0; accent-color: #166a54; }
 .ct-panel input[type="number"] { width: 100%; min-width: 0; }
 .ct-panel .ct-status { margin-bottom: 0; }
-@media (max-width: 1150px) { .app-grid { grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); } .app-overview { grid-column: 1 / -1; } }
+@media (max-width: 1150px) { .app-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 760px) { .app-shell { padding: 16px; } .app-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; } .app-card { padding: 16px; } .app-player { max-height: none; } .ct-panel .ct-endpoints { grid-template-columns: 1fr; gap: 14px; } .app-graph { min-height: 260px; } #hypergraph { min-height: 180px; } }
+@media (max-width: 760px) { .app-player { padding: 16px; } .app-graph-pending, .app-graph-pending #hypergraph { min-height: 0; } .app-workspaces { gap: 24px; } .app-workspaces button span { display: none; } .app-subtitle span { display: block; margin-left: 0; } }

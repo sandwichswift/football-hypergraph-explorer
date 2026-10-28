@@ -1,0 +1,19 @@
+{
+  "status": "ok",
+  "input_players": 50,
+  "input_events": 4407,
+  "output_edges": 385,
+  "parameters": {
+    "window_seconds": 5.0,
+    "max_players": 8,
+    "max_events": 24
+  },
+  "counts": {
+    "anchor_events": 636,
+    "clock_regressions": 2,
+    "duplicate_windows": 87,
+    "insufficient_windows": 164,
+    "invalid_or_shootout_rows": 46
+  },
+  "limitation": "No complete frame-by-frame positions. Overlapping windows are not independent contests. Empty output does not mean no competition occurred."
+}
