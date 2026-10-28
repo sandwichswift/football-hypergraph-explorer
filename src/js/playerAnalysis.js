@@ -270,7 +270,7 @@ function element(document, tag, className, text) {
 /**
  * Returns { destroy(), updateDataset(nextDataset) }.
  * Optional bubbling event: playeranalysis:select-edges. It requests, never claims,
- * a combination highlight; B/D may listen without changing the required store.
+ * a combination highlight; B listens without changing the required store.
  */
 export function mountPlayerAnalysis(container, store, initialDataset = {}) {
   if (!container || typeof container.append !== "function" || !container.ownerDocument) throw new TypeError("C 模块需要一个有效的 DOM 容器。");
@@ -604,8 +604,8 @@ export function mountPlayerAnalysis(container, store, initialDataset = {}) {
     find(".pa-network-title").textContent = competition ? "跨队对抗关联" : "多人协作关系";
     find(".pa-edge-total").textContent = model.available ? `参与 ${model.edges.length} 个超边片段` : "等待关系数据";
     find(".pa-network-note").textContent = competition
-      ? "与时段相交的完整片段计一次。关系由事件窗口推断，不代表逐帧站位或直接一对一对抗。"
-      : "与时段相交的完整超边计一次；共同参与频次不等于直接传球次数或配合成功率。";
+      ? "与时段相交的完整片段计一次。关系由事件窗口推断，不代表逐帧站位或直接一对一对抗；点击组合会同步高亮 B 主图。"
+      : "与时段相交的完整超边计一次；共同参与频次不等于直接传球次数或配合成功率；点击组合会同步高亮 B 主图。";
     find(".pa-partner-title").textContent = competition ? "共同参与球员 · Top 5" : "队友共同参与频次 · Top 5";
     const statistics = find(".pa-relation-stats");
     statistics.replaceChildren();

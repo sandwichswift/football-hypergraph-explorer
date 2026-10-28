@@ -1,6 +1,6 @@
 # 模块 D 实际验证记录
 
-> 后续整合记录：本文是 D 独立阶段的历史结果，早期 `competition-build-audit.json` 保留输入缺失记录。A/C/D 现已真实联调；最新真实审计为 `competition-build-audit-real.json`，成功提取 385 条边，当前回归结果见 [整合说明](INTEGRATION_ACD.md)。
+> 后续整合记录：本文是 D 独立阶段的历史结果，早期 `competition-build-audit.json` 保留输入缺失记录。A/B/C/D 现已真实联调；最新真实审计为 `competition-build-audit-real.json`，成功提取 385 条边，当前回归结果见 [整合说明](INTEGRATION_ACD.md)。
 
 日期：2026-10-28（Asia/Shanghai）。本记录只包含本轮实际执行的结果，不继承其他文档中的测试成功声明。
 
