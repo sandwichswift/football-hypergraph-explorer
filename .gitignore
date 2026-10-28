@@ -19,3 +19,14 @@ node_modules/
 Thumbs.db
 
 Team-Task.md
+
+# Rebuild licensed match data locally with scripts/load_data.py.
+# Keep event-level data out of source publication; see docs/DATA_A.md.
+data/raw/
+data/processed/players.json
+data/processed/events.json
+data/processed/stats.json
+output/
+.playwright-cli/
+.pytest_cache/
+.chart-data-*/
