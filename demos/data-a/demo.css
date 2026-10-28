@@ -1,0 +1,199 @@
+/* Standalone test page for module A. The module's own look lives in src/css/dataExplorer.css. */
+
+:root {
+  --da-bg: #0d131d;
+  --da-ink: #eef2f7;
+  --da-muted: #7c8798;
+  --da-line: rgb(255 255 255 / 10%);
+  --da-card: #151d2a;
+
+  color-scheme: dark;
+  font-family:
+    "Segoe UI", Inter, "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+body[data-theme="light"] {
+  --da-bg: #eef1f5;
+  --da-ink: #172033;
+  --da-muted: #7a8494;
+  --da-line: #dfe4eb;
+  --da-card: #ffffff;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--da-bg);
+  color: var(--da-ink);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid #4a9ae0;
+  outline-offset: 2px;
+}
+
+.da-top,
+.da-main {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding-right: 20px;
+  padding-left: 20px;
+}
+
+.da-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 18px;
+  padding-bottom: 6px;
+}
+
+.da-title {
+  display: grid;
+  gap: 2px;
+}
+
+.da-title strong {
+  font-size: 14px;
+}
+
+.da-title span {
+  color: var(--da-muted);
+  font-size: 12.5px;
+}
+
+.da-switch {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--da-line);
+  border-radius: 999px;
+  background: var(--da-card);
+}
+
+.da-switch a {
+  padding: 4px 14px;
+  white-space: nowrap;
+  border-radius: 999px;
+  color: var(--da-muted);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.da-switch a[aria-current="page"] {
+  background: var(--da-ink);
+  color: var(--da-bg);
+  font-weight: 600;
+}
+
+.da-main {
+  padding-bottom: 32px;
+}
+
+.da-main > #data-panel > .de-root {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.da-loading {
+  margin: 40px 0;
+  color: var(--da-muted);
+}
+
+.da-c-integration {
+  margin-top: 4px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: #ffffff;
+  color: #1a302c;
+}
+
+.da-c-integration > summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.da-c-integration #player-panel {
+  margin-top: 14px;
+}
+
+.da-tools {
+  margin-top: 14px;
+  color: var(--da-muted);
+  font-size: 12.5px;
+}
+
+.da-tools > summary {
+  cursor: pointer;
+}
+
+.da-tools a {
+  color: inherit;
+}
+
+.da-time-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 10px 0;
+}
+
+.da-time-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.da-time-controls input {
+  width: 78px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--da-line);
+  border-radius: 8px;
+  background: var(--da-card);
+  color: var(--da-ink);
+}
+
+.da-time-controls button {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--da-line);
+  border-radius: 999px;
+  background: var(--da-card);
+  color: var(--da-ink);
+}
+
+#demo-time-error {
+  flex-basis: 100%;
+  margin: 0;
+  color: #e9564c;
+}
+
+@media (max-width: 760px) {
+  .da-top,
+  .da-main {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .da-top {
+    align-items: flex-start;
+  }
+}
