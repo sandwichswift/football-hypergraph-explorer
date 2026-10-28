@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "raw_event_count": 4407,
+  "collaboration_edges": 531,
+  "team_counts": {
+    "779": 302,
+    "771": 229
+  },
+  "cardinality_counts": {
+    "3": 262,
+    "4": 187,
+    "5": 82
+  },
+  "star_participation": {
+    "Lionel Andrés Messi Cuccittini": 81,
+    "Kylian Mbappé Lottin": 32
+  },
+  "sample_edge_id": "collab_e19996044d23dfe97ecb",
+  "checks": [
+    "all raw source pass outcomes",
+    "connected recipients and actors",
+    "all intervening events",
+    "period/possession/team continuity",
+    "20 second / 4 pass / 5 player bounds",
+    "exact participants, time and unit weight"
+  ],
+  "parameters": {
+    "max_passes": 4,
+    "max_seconds": 20.0,
+    "max_players": 5
+  },
+  "verification": {
+    "python": 58,
+    "node": 75,
+    "browser": 59,
+    "browser_light_repeat": 17
+  }
+}

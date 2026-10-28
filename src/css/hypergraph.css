@@ -1,0 +1,52 @@
+.hg-panel { --hg-ink: #193c3e; color: var(--hg-ink); font: 14px/1.6 system-ui, sans-serif; min-width: 0; }
+.hg-panel *, .hg-panel *::before, .hg-panel *::after { box-sizing: border-box; }
+.hg-panel [hidden] { display: none !important; }
+.hg-panel .hg-eyebrow { font-size: 10px; letter-spacing: .13em; color: #687e78; margin: 0 0 6px; }
+.hg-panel .hg-title { font-size: clamp(18px, 2vw, 25px); line-height: 1.4; margin: 0 0 18px; letter-spacing: -.025em; }
+.hg-panel .hg-toolbar { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+.hg-panel button, .hg-panel select { font: inherit; color: inherit; background: #fff; border: 1px solid #ccdad4; border-radius: 6px; padding: 6px 9px; cursor: pointer; min-height: 36px; max-width: 100%; }
+.hg-panel button:hover { background: #edf4f1; border-color: #839f95; }
+.hg-panel button:disabled { opacity: .45; cursor: default; }
+.hg-panel button:focus-visible, .hg-panel select:focus-visible, .hg-panel summary:focus-visible, .hg-panel .hg-node:focus-visible { outline: 3px solid #378ab6; outline-offset: 3px; }
+.hg-panel .hg-limit-label { font-size: 12px; }
+.hg-panel .hg-summary { margin: 14px 0 8px; font-size: 12px; color: #496961; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.hg-panel .hg-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; font-size: 12px; padding: 10px 0; border-top: 1px solid #e2eae5; }
+.hg-panel .hg-team::before { content: ''; display: inline-block; width: 9px; height: 9px; background: var(--hg-team); border-radius: 50%; margin-right: 6px; }
+.hg-panel .hg-boundary { color: #657870; }
+.hg-panel .hg-explanation, .hg-panel .hg-guide, .hg-panel .hg-detail-note { color: #65796f; font-size: 12px; margin: 6px 0 12px; overflow-wrap: anywhere; }
+.hg-panel .hg-stage { position: relative; background: radial-gradient(ellipse at 50% 50%, #fff 0%, #f1f6f2 100%); border: 1px solid #dce6df; border-radius: 10px; overflow: hidden; }
+.hg-panel .hg-svg { display: block; width: 100%; height: auto; min-height: 240px; touch-action: none; }
+.hg-panel .hg-empty { min-height: 230px; margin: 0; padding: 72px 24px; text-align: center; color: #64796e; }
+.hg-panel .hg-edge { fill-opacity: .075; stroke-width: 1.6px; cursor: pointer; vector-effect: non-scaling-stroke; }
+.hg-panel[data-mode="competition"] .hg-edge { stroke-dasharray: 6 4; fill-opacity: .055; }
+.hg-panel .hg-edge:hover, .hg-panel .hg-edge-selected { fill-opacity: .17; stroke-width: 2.5px; }
+.hg-panel .hg-dim { opacity: .13; }
+.hg-panel .hg-node { cursor: grab; }
+.hg-panel .hg-node:active { cursor: grabbing; }
+.hg-panel .hg-node circle { stroke: #fff; stroke-width: 2.5px; }
+.hg-panel .hg-node-selected circle { stroke: #213f3b; stroke-width: 4px; r: 13px; }
+.hg-panel .hg-node text { font-size: 12px; font-weight: 600; fill: #29453f; paint-order: stroke; stroke: #fafdfb; stroke-width: 3px; pointer-events: none; }
+.hg-panel .hg-badge { cursor: pointer; }
+.hg-panel .hg-badge rect { fill: #fff; fill-opacity: .9; stroke: #a8bcb1; }
+.hg-panel .hg-badge text { font-size: 11px; fill: #36574b; pointer-events: none; }
+.hg-panel .hg-choices { display: flex; flex-direction: column; gap: 5px; max-height: 185px; overflow-y: auto; margin: 14px 0; }
+.hg-panel .hg-choice { text-align: left; font-size: 12px; overflow-wrap: anywhere; flex-shrink: 0; }
+.hg-panel .hg-choice[aria-pressed="true"] { background: #e1eee7; border-color: #4f8971; }
+.hg-panel .hg-detail { border-top: 1px solid #dce6df; padding-top: 12px; }
+.hg-panel .hg-detail h4 { margin: 0 0 10px; font-size: 14px; }
+.hg-panel .hg-detail-hint { font-size: 12px; color: #718278; margin: 0; }
+.hg-panel .hg-members { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.hg-panel .hg-member { font-size: 12px; }
+.hg-panel .hg-evidence-list { max-height: 310px; overflow-y: auto; }
+.hg-panel .hg-evidence-list details { border-top: 1px solid #e5ece6; padding: 8px 0; font-size: 12px; }
+.hg-panel summary { cursor: pointer; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.hg-panel .hg-evidence-description { color: #65796f; overflow-wrap: anywhere; }
+.hg-panel .hg-event-list { padding-left: 20px; }
+.hg-panel .hg-event { margin-bottom: 10px; overflow-wrap: anywhere; }
+.hg-panel .hg-event-id { display: block; color: #698078; font-size: 11px; word-break: break-all; }
+@media (max-width: 600px) {
+  .hg-panel .hg-toolbar { gap: 5px; }
+  .hg-panel button, .hg-panel select { font-size: 12px; }
+  .hg-panel .hg-svg { min-height: 210px; }
+  .hg-panel .hg-title { font-size: 19px; }
+}
