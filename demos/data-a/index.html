@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="demo.css" />
+    <title>阿根廷 vs 法国 | Football HyperGraph Explorer</title>
+  </head>
+  <body>
+    <header class="da-top">
+      <div class="da-title">
+        <strong>Football HyperGraph Explorer</strong>
+        <span>2022 世界杯决赛 · 卢赛尔体育场 · 2022 年 12 月 18 日</span>
+      </div>
+      <nav class="da-switch" aria-label="主题">
+        <a href="?theme=dark" data-theme="dark">深色</a>
+        <a href="?theme=light" data-theme="light">浅色</a>
+      </nav>
+    </header>
+
+    <main class="da-main">
+      <div id="data-panel">
+        <p class="da-loading" role="status">正在读取比赛数据…</p>
+      </div>
+
+      <details class="da-c-integration">
+        <summary>球员个人分析（C 模块）</summary>
+        <div id="player-panel"></div>
+      </details>
+
+      <details class="da-tools">
+        <summary>测试工具</summary>
+        <section class="da-time-controls" aria-label="时间筛选测试控件">
+          <span>共享时间段（正式页面由 D 模块的时间轴提供）</span>
+          <label>从 <input id="demo-start" type="number" min="0" step="0.01" value="0" /></label>
+          <label>到 <input id="demo-end" type="number" min="0" step="0.01" value="130" /></label>
+          <button type="button" id="demo-apply">应用时间</button>
+          <button type="button" id="demo-all">全场</button>
+          <button type="button" id="demo-first">0–30 分钟</button>
+          <p id="demo-time-error" role="alert" hidden></p>
+        </section>
+        <a href="../../README.md">运行与数据说明</a>
+      </details>
+    </main>
+    <script type="module" src="demo.js"></script>
+  </body>
+</html>
