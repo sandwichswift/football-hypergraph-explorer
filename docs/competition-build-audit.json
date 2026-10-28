@@ -1,0 +1,6 @@
+{
+  "status": "input_error",
+  "output_edges": 0,
+  "reason": "[Errno 2] No such file or directory: 'D:\\\\科研入门\\\\SIGS\\\\data visualization\\\\football-hypergraph-explorer\\\\data\\\\processed\\\\players.json'",
+  "limitation": "A's normalized source data unavailable or invalid. No match evidence has been inferred."
+}
