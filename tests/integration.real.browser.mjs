@@ -1,4 +1,4 @@
-/** Full A/C/D integration with locally rebuilt real data; B is not substituted. */
+/** Real A/C/D integration plus an explicit missing-B fallback boundary. */
 import test, { before, after, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
@@ -48,8 +48,8 @@ beforeEach(async () => {
 });
 afterEach(async () => { await page?.close(); assert.deepEqual(errors, []); });
 
-test("real app mounts A/C/D and explicitly distinguishes undelivered B from zero", async () => {
-  // Keep testing the missing-B boundary explicitly after B is delivered.
+test("the delivered app keeps the missing-B fallback distinct from zero", async () => {
+  // Keep testing this boundary explicitly after B is delivered.
   await page.route("**/data/processed/collaboration_edges.json", route => route.fulfill({ status: 404, body: "B source intentionally unavailable in this test" }));
   await page.route("**/src/js/hypergraph.js", route => route.fulfill({ status: 404, body: "B renderer intentionally unavailable in this test" }));
   await page.reload();
