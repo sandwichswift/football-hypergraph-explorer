@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Football HyperGraph Explorer</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <main id="football-app" class="app-shell">
+    <header class="app-header">
+      <p class="app-eyebrow">FOOTBALL / RELATIONSHIPS / TIME</p>
+      <h1>Football HyperGraph Explorer</h1>
+      <p id="match-label">比赛由已校验的数据文件确定 · 首选 2022 世界杯决赛</p>
+      <p id="app-status" role="status" aria-live="polite">正在启动…</p>
+    </header>
+    <pre id="app-errors" class="app-errors" role="alert" hidden></pre>
+    <noscript>请启用 JavaScript，并通过本地 HTTP 服务打开页面。</noscript>
+    <div class="app-grid">
+      <section class="app-card app-overview" aria-labelledby="overview-title"><h2 id="overview-title">比赛概览</h2><div id="data-explorer">等待 A 模块</div></section>
+      <section class="app-card app-graph" aria-labelledby="graph-title"><h2 id="graph-title">多人关系超图</h2><div id="hypergraph">等待 B 的唯一主渲染器</div></section>
+      <aside class="app-card app-player" aria-label="球星分析"><div id="player-analysis">等待 C 模块</div></aside>
+      <div class="app-card app-timeline" id="competition-timeline" aria-label="模式与时间控制">等待 D 模块</div>
+    </div>
+    <footer class="app-footer">对抗关系来自可追溯的短事件窗口推断；不表示完整逐帧站位。相交的超边片段完整计一次。使用说明：<a href="../docs/INTEGRATION_D.md">模块 D 与项目集成</a>。</footer>
+  </main>
+</body>
+</html>
