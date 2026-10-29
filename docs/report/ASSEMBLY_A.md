@@ -7,12 +7,12 @@
 | Introduction、Dataset and Preprocessing | A章节已有 | 合并时统一编号、引用和全文措辞 |
 | A案例、截图与AI说明 | 已有真实材料 | 组内确认最终截图与讲述顺序 |
 | Hypergraph Modeling and Visualization | B已交付协作超边规则、双模式主图、真实截图、测试和AI说明 | 组内确认最终讲述顺序与个人审阅 |
-| Star Player Analysis | C已补真实A/B/D联调、组合高亮、案例、4张真实截图及AI草稿 | C正式展示文件与个人审阅 |
+| Star Player Analysis | C已补真实A/B/D联调、组合高亮、案例、4张真实截图、正式三页PPT及讲稿 | 个人审阅与全组统一讲述顺序 |
 | Competition and Temporal Analysis | D已交付算法、控件、总装、章节草稿；真实提取385条边并与B/C联动 | D正式展示文件与个人审阅 |
 | Results and Discussion | A有本模块案例 | B/C/D各自有来源依据的案例，全组限制与完整页面截图 |
 | Conclusion | 待四人审核 | 只总结最终实际完成的功能 |
 | References & AI Usage | A已记录自身范围 | 收集其他成员来源、工具用途和实际人工审核状态 |
-| 幻灯片总稿 | A、B已有可编辑PPTX；C/D有文字提纲 | 合并后各人最多3分钟 |
+| 幻灯片总稿 | A、B、C已有可编辑PPTX；D有文字提纲 | 合并后各人最多3分钟 |
 | 最终课程压缩包 | 尚未制作 | 四模块总装验收、全组report.pdf、全员slides、组号、数据许可处理、总大小≤50MB |
 
 ## 合并时的顺序
