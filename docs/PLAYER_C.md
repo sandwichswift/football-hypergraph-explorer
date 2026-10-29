@@ -1,6 +1,6 @@
 # C 模块：球星聚焦与个人表现分析
 
-本模块遵循用户提供的四人分工与接口说明 v1.0（2026-10-27），开发分支为 `feature/player-C`。2026-10-29 已整合 A 的真实数据、B 的主超图和 D 的正式 store/时间控件；未增加共享状态字段或修改赛事 JSON 契约。
+本模块遵循用户提供的四人分工与接口说明 v1.0（2026-10-27）。2026-10-29 已整合 A 的真实数据、B 的主超图和 D 的正式 store/时间控件，并完成 C 的正式三页 PPT；未增加共享状态字段或修改赛事 JSON 契约。
 
 ## 1. 立即运行
 
@@ -29,8 +29,11 @@ python3 -m http.server 8000 --bind 127.0.0.1
 | `tests/playerAnalysis.test.mjs` | 无第三方依赖的统计测试 |
 | `tests/playerAnalysis.browser.mjs` | Playwright 浏览器交互与生命周期测试 |
 | `docs/report/part_C.md` | 方法、编码、交互和局限的报告草稿 |
-| `docs/slides/part_C_outline.md` | 约三页、三分钟的文字展示提纲；不是正式 PPT |
-| `docs/screenshots/player-c-demo-*.png` | 实际运行的模拟演示截图，正式报告应替换为真实数据版本 |
+| `docs/slides/part_C.pptx` | 与 A/B 同画幅、字体和主题的正式三页 PPT，内含演讲备注 |
+| `docs/slides/part_C_notes.md` | 对应的约三分钟讲稿、演示顺序和数据口径 |
+| `docs/slides/part_C_outline.md` | 正式 PPT 的策划提纲及问答准备 |
+| `docs/screenshots/player-c-real-*.png` | 实际运行的 A/B/C/D 真实数据整合页面截图 |
+| `docs/screenshots/player-c-demo-*.png` | 实际运行的模拟演示截图，仅用于边界测试 |
 
 未实现第二套主超图、时间轴或数据预处理脚本；独立演示的筛选控件只用于测试 D 的状态协议。
 
@@ -149,7 +152,7 @@ PLAYWRIGHT_BROWSER_CHANNEL=chrome node --test tests/playerAnalysis.browser.mjs
 
 ## 8. 当前交付边界
 
-C 的搜索、个人指标、对抗/协作关系、组合证据、射门与对比已使用 A/B/D 的真实产物验证；B 的球员高亮和 C→B 组合高亮已在真实浏览器中验收。正式 PPT 与最终提交压缩包另行汇总。
+C 的搜索、个人指标、对抗/协作关系、组合证据、射门与对比已使用 A/B/D 的真实产物验证；B 的球员高亮和 C→B 组合高亮已在真实浏览器中验收。正式三页 PPT 已交付；全组报告、D 幻灯片和最终课程压缩包仍由全组汇总。
 
 ## 9. AI 使用记录
 
