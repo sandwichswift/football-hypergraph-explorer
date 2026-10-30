@@ -175,18 +175,21 @@ export function mountWorkspace(document, activeStore) {
   return { destroy() { off(); listeners.forEach(remove => remove()); } };
 }
 
-export async function startApp(document = globalThis.document) {
+// Optional inputs let the offline package reuse this exact integration path.
+export async function startApp(document = globalThis.document, { dataset: embeddedDataset, importModule } = {}) {
   const status = document.getElementById("app-status");
   const errors = document.getElementById("app-errors");
   status.textContent = "正在读取比赛数据…";
   let mounted, workspace;
   try {
     const unavailable = [];
-    const dataset = await loadDataset({ allowUnavailableEdges: true, onUnavailableEdge: value => unavailable.push(value) });
+    const dataset = embeddedDataset === undefined
+      ? await loadDataset({ allowUnavailableEdges: true, onUnavailableEdge: value => unavailable.push(value) })
+      : validateDataset(embeddedDataset);
     store.setState({ selectedMatchId: dataset.stats.match_id, selectedPlayerId: null, selectedTeamId: null,
       mode: !Array.isArray(dataset.collaborationEdges) && Array.isArray(dataset.competitionEdges) ? "competition" : "collaboration", timeRange: getDatasetTimeRange(dataset) });
     document.getElementById("match-label").textContent = `比赛 ${dataset.stats.match_id} · ${[...new Set(dataset.players.map(player => player.team_name || player.team_id))].join(" / ")}`;
-    mounted = await mountModules(document, store, dataset);
+    mounted = await mountModules(document, store, dataset, importModule);
     workspace = mountWorkspace(document, store);
     const messages = [...unavailable.map(({ key, filename }) => `${key === "collaborationEdges" ? "协作" : "对抗"}关系文件尚未交付：${filename}；显示为未提供，不计作零条关系。`), ...mounted.errors];
     errors.hidden = messages.length === 0;
@@ -204,6 +207,6 @@ export async function startApp(document = globalThis.document) {
   return { destroy() { workspace?.destroy(); mounted?.destroy(); } };
 }
 
-if (typeof document !== "undefined" && document.getElementById("football-app")) {
+if (typeof document !== "undefined" && document.getElementById("football-app") && !document.documentElement?.hasAttribute("data-offline")) {
   startApp().then(app => globalThis.addEventListener("pagehide", () => app.destroy(), { once: true }));
 }

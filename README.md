@@ -8,6 +8,40 @@ Data Visualization 期中四人团队项目，演示赛事为 **2022 世界杯�
 
 ## 1. 快速开始
 
+### 离线演示版：双击即可打开
+
+需要在无网络的教室演示时，使用生成的**单文件 HTML**。打开它只需要现代 Chrome 或 Edge，不需要 Python、Node.js、本地服务器或网络。
+
+先在项目根目录准备一次真实数据，再生成离线包：
+
+```powershell
+python scripts/prepare_data.py
+python scripts/build_offline.py
+```
+
+已有完整源缓存时，第一条可改为 `python scripts/prepare_data.py --offline`。第二条只读取本地文件，不下载数据；缺少五份 JSON 时明确失败，不使用模拟值替代。确认每条命令成功后再继续。macOS/Linux 可将 `python` 换成 `python3`。
+
+生成位置：
+
+| 文件 | 打开方式与用途 |
+| --- | --- |
+| `output/offline/Football-HyperGraph-Explorer.html` | 双击或用 Chrome/Edge 打开；可只复制这一个文件到其他目录或演示电脑 |
+| `output/Football-HyperGraph-Explorer-offline.zip` | 拷贝用压缩包；先解压，再打开其中的 `index.html`，附有使用说明及来源/D3 许可文件 |
+
+离线版内置同一场真实比赛的全部五份数据、现有 A/B/C/D 模块、本地 D3、样式和 StatsBomb 标志。保留比赛概览、主图拖拽缩放、协作/对抗模式、球员搜索、射门与对比、时间/球队筛选、事件证据等功能。它复用正式渲染器与状态接口，没有另外绘制一套简化主图。
+
+离线文件是**生成时的快照**：修改源码、样式或数据后，重新运行 `python scripts/build_offline.py`，已有离线页不会自动同步；浏览器内操作也不会改写源 JSON。开发版 `src/index.html` 仍须通过 HTTP 打开，不能用双击开发文件代替生成离线包。
+
+页面无需任何外部请求。主动点击数据来源的外部链接仍需网络；页面底部另有离线说明、内置的 StatsBomb 许可下载及 D3 许可。离线包包含逐事件数据，保存在已被 Git 忽略的 `output/`，不要将生成包误提交到公开仓库；转发或发布前沿用下文的源数据许可要求。此 ZIP 是网页演示包，不是包含全组报告与幻灯片的最终课程提交包。
+
+可选自定义输出目录（不可覆盖源代码或数据目录）：
+
+```powershell
+python scripts/build_offline.py --output output/classroom/index.html --zip output/classroom-demo.zip
+```
+
+### 开发版：本地 HTTP 服务
+
 | 用途 | 依赖 |
 | --- | --- |
 | 数据准备与本地服务 | Python 3.10+，仅标准库 |
@@ -228,6 +262,26 @@ python scripts/calculate_stats.py --output-dir output/rebuild-A
 
 ## 7. 测试与独立审计
 
+### 离线包专项验证
+
+先生成离线包，再执行：
+
+```powershell
+python -m unittest discover -s tests -p test_build_offline.py -v
+```
+
+安装下文的 Playwright 并选择浏览器后，还可运行：
+
+```powershell
+node --test tests/offline.browser.mjs
+```
+
+专项浏览器测试设置断网，通过 `file://` 打开 HTML，不启动服务器；检查只有 HTML 本身从磁盘读取、没有 HTTP/HTTPS 请求，并验证四模块、真实计数、球员与时间联动、100 次模式切换、独立复制与小屏布局。打包测试检查 JSON 安全嵌入、完整资源封装及输入缺失时保留已有文件。源码见 [生成脚本](scripts/build_offline.py)、[打包测试](tests/test_build_offline.py) 和 [断网浏览器测试](tests/offline.browser.mjs)。
+
+2026-10-30 已实际运行的离线专项结果：3 项 Python 打包测试、7 项断网浏览器测试通过；离线接入后，原有 75 项 Node 与 27 项 D/B/真实集成 HTTP 浏览器回归也通过。该结果单独记录，不将此前 C 独立浏览器套件的已知失败改写为通过。
+
+### 全组数据与功能验证
+
 先准备数据再运行真实测试，缺少文件会明确失败，不自动回退 fixture。
 
 ```powershell
@@ -294,6 +348,8 @@ Remove-Item Env:DE_THEME
 | 指标为 N/A | 按未知/缺失/零分母解释，不任意补零 |
 | A 选阶段后 C 数字不同 | 阶段为 A 本地筛选；共享分钟可能覆盖跨阶段的重叠时钟 |
 | C 独立浏览器测试在 Windows 返回 403 | 已知测试根路径末尾分隔符问题，见复核报告；不能据此判定生产逻辑错误 |
+| 离线页仍显示旧数据或界面 | 重新运行 `build_offline.py`，关闭旧标签页并打开新生成的 HTML；离线页不会自动读取源码目录 |
+| 双击开发版 `src/index.html` 无法加载 | 开发版通过 HTTP 使用；直接打开只支持生成后的单文件离线 HTML |
 | 端口 8000 占用 | 换成 `python -m http.server 8001 --bind 127.0.0.1`，访问同端口 `/src/` |
 | 临时目录不可写 / 中文输出解码失败 | 设置可写临时目录和 UTF-8，复测后再判断代码问题 |
 
